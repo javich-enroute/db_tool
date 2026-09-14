@@ -1,0 +1,6 @@
+.env
+.s3env
+dumps/
+env/
+__pycache__/
+*.pyc

@@ -1,0 +1,18 @@
+# S3-compatible storage credentials (AWS S3, MinIO, Cloudflare R2, Backblaze B2, Spaces...)
+# Keep this file out of version control.
+
+# Required
+S3_ACCESS_KEY_ID=
+S3_SECRET_ACCESS_KEY=
+S3_BUCKET=
+
+# Leave empty for real AWS S3. Set it for any other provider.
+# Examples: https://<accountid>.r2.cloudflarestorage.com  |  http://localhost:9000
+S3_ENDPOINT_URL=
+
+# Region. Defaults to us-east-1 when empty (R2 and most MinIO setups accept "auto"/"us-east-1").
+S3_REGION=
+
+# Optional key prefix inside the bucket, e.g. mason/db-dumps
+# Defaults to empty (uploads land at the bucket root).
+S3_PREFIX=
