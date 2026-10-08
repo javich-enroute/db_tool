@@ -61,16 +61,16 @@ def check_connection(settings):
 def backup_postgres_db(settings):
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
     output_file = os.path.join(
-        settings[DUMP_PATH_VAR], f"{BACKUP_PREFIX}-{timestamp}.sql"
+        settings[DUMP_PATH_VAR], f"{BACKUP_PREFIX}-{timestamp}.dump"
     )
-    latest_file = os.path.join(settings[DUMP_PATH_VAR], "latest.sql")
+    latest_file = os.path.join(settings[DUMP_PATH_VAR], "latest.dump")
 
     command = [
         "pg_dump",
         "-h", settings["db_host"],
         "-p", settings["db_port"],
         "-U", settings["db_user"],
-        "-F", "p",
+        "-F", "c", "-b", "-v"
     ]
 
     for table in settings[EXCLUDE_TABLES_VAR]:
@@ -103,16 +103,16 @@ def backup_postgres_db(settings):
 def backup_postgres_db_full(settings):
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
     output_file = os.path.join(
-        settings[DUMP_PATH_VAR], f"{BACKUP_PREFIX}-{timestamp}-FULL.sql"
+        settings[DUMP_PATH_VAR], f"{BACKUP_PREFIX}-{timestamp}-FULL.dump"
     )
-    latest_file = os.path.join(settings[DUMP_PATH_VAR], "latest-FULL.sql")
+    latest_file = os.path.join(settings[DUMP_PATH_VAR], "latest-FULL.dump")
 
     command = [
         "pg_dump",
         "-h", settings["db_host"],
         "-p", settings["db_port"],
         "-U", settings["db_user"],
-        "-F", "p",
+        "-F", "c", "-b", "-v"
     ]
 
     command += ["-f", output_file, settings["db_name"]]
@@ -145,5 +145,5 @@ if __name__ == "__main__":
         print(error, file=sys.stderr)
         sys.exit(1)
 
-    backup_postgres_db(settings)
+    #backup_postgres_db(settings)
     backup_postgres_db_full(settings)
