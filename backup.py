@@ -1,3 +1,4 @@
+import argparse
 import os
 import shutil
 import subprocess
@@ -5,7 +6,7 @@ import sys
 from datetime import datetime
 
 import psycopg2
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 
 REQUIRED_VARS = ["db_host", "db_port", "db_user", "db_password", "db_name"]
 EXCLUDE_TABLES_VAR = "EXCLUDE_TABLES"
@@ -14,22 +15,25 @@ DEFAULT_DUMP_PATH = "./dumps"
 BACKUP_PREFIX = "backup"
 
 
-def load_settings():
-    load_dotenv()
+def load_settings(config_path):
+    if not os.path.isfile(config_path):
+        raise RuntimeError(f"Config file not found: {config_path}")
 
-    settings = {name: os.environ.get(name) for name in REQUIRED_VARS}
+    config = dotenv_values(config_path)
+
+    settings = {name: config.get(name) for name in REQUIRED_VARS}
     missing = [name for name, value in settings.items() if not value]
     if missing:
         raise RuntimeError(
-            f"Missing required environment variables: {', '.join(missing)}"
+            f"Missing required config values in {config_path}: {', '.join(missing)}"
         )
 
-    raw_excludes = os.environ.get(EXCLUDE_TABLES_VAR, "")
+    raw_excludes = config.get(EXCLUDE_TABLES_VAR) or ""
     settings[EXCLUDE_TABLES_VAR] = [
         table.strip() for table in raw_excludes.split(",") if table.strip()
     ]
 
-    dump_path = os.environ.get(DUMP_PATH_VAR, "").strip() or DEFAULT_DUMP_PATH
+    dump_path = (config.get(DUMP_PATH_VAR) or "").strip() or DEFAULT_DUMP_PATH
     try:
         os.makedirs(dump_path, exist_ok=True)
     except OSError as error:
@@ -137,9 +141,16 @@ def backup_postgres_db_full(settings):
         print("Backup failed!")
         print(f"Error Message: {error.stderr}")
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Back up a PostgreSQL database with pg_dump.")
+    parser.add_argument("config", help="Path to the config file (key=value format, see .env.example)")
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
+    args = parse_args()
     try:
-        settings = load_settings()
+        settings = load_settings(args.config)
         check_connection(settings)
     except RuntimeError as error:
         print(error, file=sys.stderr)
